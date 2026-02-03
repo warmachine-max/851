@@ -4,7 +4,7 @@ let countPartitionWaysWithLogs = (arr, boundary) => {
     // 1. Fix: Size it n+1 and fill with 0 so we can add to it
     let dp = new Array(n + 1).fill(0);
 
-    // 2. Fix: The "Earth" - 1 way to partition nothing
+
     dp[0] = 1;
 
     for (let i = 1; i <= n; i++) {
