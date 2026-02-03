@@ -1,52 +1,23 @@
-var minimumK = function(nums) {
-   let right = nums.reduce((a,b) => a + b, 0);
-   let sum = right
-   let left = 1
-   let upperBound
-   while (left < right) {
-      let mid = Math.floor((left + right) / 2);
-      let count = 0
-      if(sum%mid === 0) {
-         count = count + sum/mid
-      }else{
-         count = count + Math.floor(sum/mid) + 1
-      }
+let countPartitionWaysWithLogs = (arr,boundary)=>{
+    let n = arr.length;
 
-      if(count <= mid *mid) {
-         upperBound = mid
-         right = mid - 1
-      }else{
-         left = mid + 1
-      }
-   }
-   
-   function helper(n){
-     let count = 0
-     for(let num of nums) {
-        if(num % n === 0) {
-           count = count + num / n
-        }else{
-           count = count + Math.floor(num / n) + 1
+    let dp = new Array(n + 1);
+
+    dp[1] = 1
+    for (let i = 2; i <= n; i++) {
+        let sum = 0
+        let j = i-1
+        sum  = arr[i] + arr[j]
+
+        while(sum <= boundary && j > 0){
+            dp[i] += dp[j]
+            j--
+            sum += arr[j]
         }
-     }
-     return count <= n * n
-   }
-
-   let low = 1
-   let high = upperBound
-
-   while(low < high) {
-      let mid = Math.floor((low + high) / 2);
-      if(helper(mid)) {
-         high = mid
-      }else{
-         low = mid + 1
-      }
-   }
-   
-   
-    
+    }
+    return dp[n]
 }
 
 
-console.log(minimumK([3,7,5])); // 1
+
+console.log(countPartitionWaysWithLogs([1, 1, 4, 1, 1], 4));
