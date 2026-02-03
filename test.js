@@ -1,23 +1,31 @@
-let countPartitionWaysWithLogs = (arr,boundary)=>{
-    let n = arr.length;
+function getSubarrayMaxTable(arr) {
+    const n = arr.length;
+    // Create the N x N table
+    let maxTable = Array.from({ length: n }, () => Array(n).fill(0));
 
-    let dp = new Array(n + 1);
+    // 1. Base Case: Length 1 subarrays (The diagonal)
+    for (let i = 0; i < n; i++) {
+        maxTable[i][i] = arr[i];
+    }
 
-    dp[1] = 1
-    for (let i = 2; i <= n; i++) {
-        let sum = 0
-        let j = i-1
-        sum  = arr[i] + arr[j]
-
-        while(sum <= boundary && j > 0){
-            dp[i] += dp[j]
-            j--
-            sum += arr[j]
+    // 2. Length 2 and above using your Overlapping Ranges logic
+    for (let len = 2; len <= n; len++) {
+        for (let i = 0; i <= n - len; i++) {
+            let j = i + len - 1;
+            
+            // Your Logic: Look at the "Left" neighbor and "Bottom" neighbor
+            // maxTable[i][j-1] is the range missing the last element
+            // maxTable[i+1][j] is the range missing the first element
+            maxTable[i][j] = Math.max(maxTable[i][j - 1], maxTable[i + 1][j]);
         }
     }
-    return dp[n]
+
+    return maxTable;
 }
 
+// --- Test Run ---
+const arr = [1, 5, 2, 4, 3];
+const table = getSubarrayMaxTable(arr);
 
-
-console.log(countPartitionWaysWithLogs([1, 1, 4, 1, 1], 4));
+// Beautifully print the table for confirmation
+console.log(table);
