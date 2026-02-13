@@ -1,60 +1,78 @@
-/**
- * Optimized Partitioning using Traditional 2D Memoization
- */
-function solveMinimizeMaxSum(arr, k) {
-    const n = arr.length;
-    
-    // 1. Build Subarray Max Table (Your Overlapping Logic)
-    let maxTable = Array.from({ length: n }, () => Array(n).fill(0));
-    for (let i = 0; i < n; i++) maxTable[i][i] = arr[i];
-    
-    for (let len = 2; len <= n; len++) {
-        for (let i = 0; i <= n - len; i++) {
-            let j = i + len - 1;
-            maxTable[i][j] = Math.max(maxTable[i][j - 1], maxTable[i + 1][j]);
-        }
+let summa  = (nums,k) =>{
+    let n = nums.length;
+    let prefix  = Array(n).fill(0);
+    prefix[0] = nums[0];
+
+
+    for(let i = 1; i < n; i++){
+        prefix[i] = prefix[i-1] + nums[i];
     }
 
-    // 2. Initialize 2D Memo Array
-    // Rows: current index (0 to n)
-    // Cols: partitions remaining (0 to k)
-    const memo = Array.from({ length: n + 1 }, () => Array(k + 1).fill(-1));
 
-    function dp(index, kRemaining) {
-        // Base Case: If we've already calculated this state, return it immediately
-        if (memo[index][kRemaining] !== -1) {
-            return memo[index][kRemaining];
-        }
+    let dp = Array.from({length : n}, () => Array(n).fill(-Infinity))
 
-        // Base Case: Only 1 partition left - it must cover all remaining elements
-        if (kRemaining === 1) {
-            return maxTable[index][n - 1];
-        }
-
-        let minSum = Infinity;
-
-        // Phase 2: Constrained Search (i <= n - kRemaining)
-        for (let i = index; i <= n - kRemaining; i++) {
-            // G_current is the max of the current subarray [index...i]
-            const currentMax = maxTable[index][i];
-            
-            // Recurse for the next part
-            const res = dp(i + 1, kRemaining - 1);
-            
-            if (res !== Infinity) {
-                minSum = Math.min(minSum, currentMax + res);
+    function solve(i,j,curK,conversionFactor){
+        if(curK === 1){
+            if(conversionFactor === 1){
+                return 1 * (prefix[j] - prefix[i-1])
+            }else{
+                return  -1 * (prefix[j] - prefix[i-1]);
             }
         }
 
-        // Save the result in the 2D array before returning
-        memo[index][kRemaining] = minSum;
-        return minSum;
-    }
+        if(dp[i][j] !== -Infinity){
+            return dp[i][j];
+        }
+        let res = -Infinity;
 
-    return dp(0, k);
+         for(let p = i;p<j;p++){
+            if(curK === k){
+                if(conversionFactor === 1){
+                   res = Math.max(res, prefix[p] + solve(p+1,j+1,curK-1,-1));
+                }else{
+                    res = Math.max(res, prefix[p] - solve(p+1,j+1,curK-1,-1)) 
+                }
+               
+            }else{
+                if(conversionFactor === 1){
+                    res = Math.max(res, prefix[j] - prefix[p] + solve(p+1,j+1,curK-1,-1));
+                }else{
+                     res = Math.max(res, prefix[j] - prefix[i-1] + solve(p+1,j+1,curK-1,1));
+                }
+                
+            }
+
+            dp[i][j] = res
+            return res;      
+    }
 }
 
-// --- Verification ---
-const arr = [10, 2, 3, 15, 20, 1, 100]
-const result = solveMinimizeMaxSum(arr, 3);
-console.log("Final Result:", result); // Output: 9
+   
+   //     // base case}
+    
+//      but if  k = 1 or k = n 
+//      we can do somethinge thing like 
+//     if(k === 1 ) {
+//         partition (i,j)
+//       prefix[i]
+//       // depending upon partion end
+//     }if(k === n){
+//          partition (i,j)
+//          res = prefix[n] - prefix[i-1];
+//     }else{
+//         res = prefix[j] - prefix[i-1];
+//     }
+// }
+
+ let res =  solve(0,n-k,k,1)
+ console.log(dp)
+ return res;
+}
+
+
+
+let nums  = [8,9,11,12,14,15,16,17,18,19];
+
+let k = 4
+
+console.log(summa(nums))
