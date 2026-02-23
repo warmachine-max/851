@@ -58,6 +58,10 @@ var longestPalindromicSubsequence = function(s, k_limit) {
         }
     }
 
+    console.log("DP Table (3D):", dp);
+
     // Return the absolute best found for the full string with max budget
     return dp[0][n - 1][k_limit];
 };
+
+console.log(longestPalindromicSubsequence("abd", 2)); // Expected: 3 (e.g., "aba" or "cdc")
