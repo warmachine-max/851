@@ -1,78 +1,50 @@
-let summa  = (nums,k) =>{
-    let n = nums.length;
-    let prefix  = Array(n).fill(0);
-    prefix[0] = nums[0];
+function processSubarrayQueries(nums, queries) {
+    const n = nums.length;
 
-
-    for(let i = 1; i < n; i++){
-        prefix[i] = prefix[i-1] + nums[i];
+    // 1. Precompute Prefix Sum Array
+    const P = new Array(n + 1).fill(0);
+    for (let i = 0; i < n; i++) {
+        P[i + 1] = P[i] + nums[i];
     }
 
-
-    let dp = Array.from({length : n}, () => Array(n).fill(-Infinity))
-
-    function solve(i,j,curK,conversionFactor){
-        if(curK === 1){
-            if(conversionFactor === 1){
-                return 1 * (prefix[j] - prefix[i-1])
-            }else{
-                return  -1 * (prefix[j] - prefix[i-1]);
-            }
-        }
-
-        if(dp[i][j] !== -Infinity){
-            return dp[i][j];
-        }
-        let res = -Infinity;
-
-         for(let p = i;p<j;p++){
-            if(curK === k){
-                if(conversionFactor === 1){
-                   res = Math.max(res, prefix[p] + solve(p+1,j+1,curK-1,-1));
-                }else{
-                    res = Math.max(res, prefix[p] - solve(p+1,j+1,curK-1,-1)) 
-                }
-               
-            }else{
-                if(conversionFactor === 1){
-                    res = Math.max(res, prefix[j] - prefix[p] + solve(p+1,j+1,curK-1,-1));
-                }else{
-                     res = Math.max(res, prefix[j] - prefix[i-1] + solve(p+1,j+1,curK-1,1));
-                }
-                
-            }
-
-            dp[i][j] = res
-            return res;      
+    // 2. Precompute Prefix-of-Prefix Sum Array
+    const PP = new Array(n + 2).fill(0);
+    for (let i = 0; i <= n; i++) {
+        PP[i + 1] = PP[i] + P[i];
     }
-}
+    console.log(`Prefix Sum Array (P): ${P}`);
+    console.log(`Prefix-of-Prefix Sum Array (PP): ${PP}`);
 
-   
-   //     // base case}
+    // 3. Process each query in O(1) time
+    const results = [];
     
-//      but if  k = 1 or k = n 
-//      we can do somethinge thing like 
-//     if(k === 1 ) {
-//         partition (i,j)
-//       prefix[i]
-//       // depending upon partion end
-//     }if(k === n){
-//          partition (i,j)
-//          res = prefix[n] - prefix[i-1];
-//     }else{
-//         res = prefix[j] - prefix[i-1];
-//     }
-// }
+    for (let q = 0; q < queries.length; q++) {
+        const [L, R] = queries[q];
+        const len = R - L + 1;
+        console.log(`Processing query ${q + 1}: Range [${L}, ${R}] (Length: ${len})`);
+        // This is the clean algebraic formula for any isolated window [L, R]
+        console.log(`PP[R + 2]: ${PP[R + 2]}, PP[L + 1]: ${PP[L + 1]},  P[L]: ${ P[L]}, len: ${len}`);
+        const totalSum = PP[R + 2] - PP[L + 1] - (len * P[L]);
+        
+        results.push({
+            query: `Range [${L}, ${R}] (Elements: ${nums.slice(L, R + 1)})`,
+            totalNestedSubarraySum: totalSum
+        });
+    }
 
- let res =  solve(0,n-k,k,1)
- console.log(dp)
- return res;
+    return results;
 }
 
+// --- Driver Test Run ---
+const nums = [1, 2, 3, 4, 5];
 
+// We can pass as many queries as we want!
+const queries = [
+    [3, 4], // Elements [4, 5] -> Subarrays: [4], [5], [4,5] -> Total: 18
+    // [1, 2], // Elements [2, 3] -> Subarrays: [2], [3], [2,3] -> Total: 10
+    // [0, 2] , // Elements [1, 2, 3] -> Subarrays: [1],[2],[3],[1,2],[2,3],[1,2,3] -> Total: 20
+    // [0,3]// Elements [1, 2, 3, 4] -> Subarrays: [1],[2],[3],[4],[1,2],[2,3],[3,4],[1,2,3],[2,3,4],[1,2,3,4] -> Total: 50
+];
 
-let nums  = [8,9,11,12,14,15,16,17,18,19];
-
-let k = 4
-
-console.log(summa(nums))
+const output = processSubarrayQueries(nums, queries);
+console.log(JSON.stringify(output, null, 2));

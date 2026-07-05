@@ -1,54 +1,62 @@
-function getTotalPalindromes(s) {
+function countPalindromeTripletsPrefixSuffix(s) {
     const n = s.length;
-    if (n === 0) return 0;
+    if (n < 3) return 0;
 
-    // --- STEP 1: YOUR METHOD (The Boolean Foundation) ---
-    // This tells us: "Is s[i...j] a palindrome?"
-    let isPal = Array.from({ length: n }, () => Array(n).fill(false));
+    // 1. Standard O(n^2) Base Palindrome Grid Setup
+    let isPalin = Array.from({ length: n }, () => new Array(n).fill(false));
+    let endsAt = new Array(n).fill(0);
+    let startsAt = new Array(n).fill(0);
 
-    // Single characters are always palindromes
+    for (let i = 0; i < n; i++) isPalin[i][i] = true;
+    for (let i = 0; i < n - 1; i++) {
+        if (s[i] === s[i + 1]) isPalin[i][i + 1] = true;
+    }
+    for (let len = 3; len <= n; len++) {
+        for (let i = 0; i <= n - len; i++) {
+            let j = i + len - 1;
+            if (s[i] === s[j] && isPalin[i + 1][j - 1]) isPalin[i][j] = true;
+        }
+    }
+
+    // Accumulate structural bounds
     for (let i = 0; i < n; i++) {
-        isPal[i][i] = true;
-    }
-
-    // Checking lengths 2 and up (Your exact logic)
-    for (let len = 2; len <= n; len++) {
-        for (let i = 0; i + len - 1 < n; i++) {
-            let j = i + len - 1;
-
-            if (s[i] === s[j] && (len === 2 || isPal[i + 1][j - 1])) {
-                isPal[i][j] = true;
+        for (let j = i; j < n; j++) {
+            if (isPalin[i][j]) {
+                startsAt[i]++;
+                endsAt[j]++;
             }
         }
     }
 
-    // --- STEP 2: THE SCOREBOARD (The Range Counter) ---
-    // This tells us: "How many total palindromes are inside s[i...j]?"
-    let rangeCount = Array.from({ length: n }, () => Array(n).fill(0));
+    // 2. Build the Left Side Prefix Array
+    let prefixCount = new Array(n).fill(0);
+    prefixCount[0] = endsAt[0];
+    for (let i = 1; i < n; i++) {
+        prefixCount[i] = prefixCount[i - 1] + endsAt[i];
+    }
 
-    for (let len = 1; len <= n; len++) {
-        for (let i = 0; i + len - 1 < n; i++) {
-            let j = i + len - 1;
+    // 3. Build the Right Side Suffix Array (Your mental intuition)
+    let suffixCount = new Array(n).fill(0);
+    suffixCount[n - 1] = startsAt[n - 1];
+    for (let i = n - 2; i >= 0; i--) {
+        suffixCount[i] = suffixCount[i + 1] + startsAt[i];
+    }
 
-            if (len === 1) {
-                // Base case: range of length 1 has exactly 1 palindrome
-                rangeCount[i][j] = 1;
-            } else {
-                // Formula: Left side + Right side - Middle + (Current Whole String)
-                let left = rangeCount[i][j - 1];
-                let right = rangeCount[i + 1][j];
-                let middle = rangeCount[i + 1][j - 1];
-                let current = isPal[i][j] ? 1 : 0;
-
-                rangeCount[i][j] = left + right - middle + current;
+    // 4. Run the final O(n^2) loop over all intervals [i...j]
+    let totalTriplets = 0;
+    for (let i = 1; i < n - 1; i++) {
+        for (let j = i; j < n - 1; j++) {
+            if (isPalin[i][j]) {
+                // Number of palindromes to the left of 'i'
+                let leftOptions = prefixCount[i - 1];
+                
+                // Number of palindromes to the right of 'j'
+                let rightOptions = suffixCount[j + 1];
+                
+                totalTriplets += (leftOptions * rightOptions);
             }
         }
     }
 
-    // Return the count for the whole string (from index 0 to n-1)
-    return rangeCount[0][n - 1];
+    return totalTriplets;
 }
-
-// TEST CASES
-console.log(getTotalPalindromes("aba"));   // Output: 4 ('a', 'b', 'a', 'aba')
-console.log(getTotalPalindromes("aaaa"));  // Output: 10
